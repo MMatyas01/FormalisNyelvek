@@ -6,17 +6,17 @@
 
 void DFAProblem::initialize_parser(cxxopts::Options &options) {
     options.add_options()
-        ("checkdfa", "Check words in the DFA", cxxopts::value<std::string>());
+        ("check", "Check words in the DFA", cxxopts::value<std::string>());
 }
 
 bool DFAProblem::is_chosen_problem(const cxxopts::ParseResult &args) {
-    return args.count("checkdfa") > 0;
+    return args.count("check") > 0;
 }
 
 int DFAProblem::run(const cxxopts::ParseResult &args) {
     std::string inputFilename = args["input"].as<std::string>();
     std::string outputFilename = args["output"].as<std::string>();
-    std::string words = args["checkdfa"].as<std::string>();
+    std::string words = args["check"].as<std::string>();
 
     std::ifstream inputFile(inputFilename);
 

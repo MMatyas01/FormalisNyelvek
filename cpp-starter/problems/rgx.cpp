@@ -44,15 +44,15 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0;
 
         // 1. Október 15-én létrejött sorok
-        std::regex rx1("^10-15\\s+");
+        std::regex rx1("^\\s*10-15[ \\t]+");
         // 2. Október 15. 10:18:51
-        std::regex rx2("^10-15\\s+10:18:51\\.\\d+\\s+");
+        std::regex rx2("^\\s*10-15[ \\t]+10:18:51\\.[0-9]+[ \\t]+");
         // 3. Bármikor 51 másodperckor
-        std::regex rx3("^\\S+\\s+\\d{2}:\\d{2}:51\\.\\d+\\s+");
-        // 4. lowmemorykiller tag
-        std::regex rx4("lowmemorykiller");
-        // 5. 10:18:51-kor, 221-es PID (A feladat NEM írja, hogy csak 10-15-én!)
-        std::regex rx5("^\\S+\\s+10:18:51\\.\\d+\\s+221\\s+");
+        std::regex rx3("^\\s*[^ \\t]+[ \\t]+[0-9]{1,2}:[0-9]{2}:51\\.[0-9]+[ \\t]+");
+        // 4. lowmemorykiller tag (a taget keressük, ami kettősponttal végződik)
+        std::regex rx4("[ \\t]+lowmemorykiller:");
+        // 5. 10:18:51-kor, 221-es process (PID vagy TID oszlopban is kereshetjük)
+        std::regex rx5("^\\s*[^ \\t]+[ \\t]+10:18:51\\.[0-9]+[ \\t]+(?:221[ \\t]+[0-9]+|[0-9]+[ \\t]+221)[ \\t]+");
 
         for (const auto& l : lines) {
             if (std::regex_search(l, rx1)) c1++;
@@ -64,7 +64,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         outputFile << c1 << "\n" << c2 << "\n" << c3 << "\n" << c4 << "\n" << c5 << "\n";
 
     } else if (task == 2) {
-        // 2. feladat: Csak a hibasorok (E) .java fájljainak kinyerése
+        // Már működik, nem változtattunk rajta
         std::regex rxLevelE("^\\S+\\s+\\S+\\s+\\d+\\s+\\d+\\s+E\\s+");
         std::regex rxJava("([a-zA-Z0-9_]+\\.java)");
 
@@ -79,7 +79,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 3) {
-        // 3. feladat: Egyedi PID-ek sorrendben
         std::regex rxPID("^\\S+\\s+\\S+\\s+(\\d+)");
         std::set<std::string> seen;
 
@@ -95,7 +94,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 4) {
-        // 4. feladat: A legtöbb E-t tartalmazó PID
         std::regex rxE("^\\S+\\s+\\S+\\s+(\\d+)\\s+\\d+\\s+E\\s+");
         std::map<std::string, int> errCount;
 
@@ -119,7 +117,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 5) {
-        // 5. feladat: Fő szálon (PID == TID) történt E-k száma
         std::regex rxMainThreadE("^\\S+\\s+\\S+\\s+(\\d+)\\s+\\1\\s+E\\s+");
         int count = 0;
 

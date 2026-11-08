@@ -34,7 +34,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         return 1;
     }
 
-    // Beolvassuk az összes sort
     std::string line;
     std::vector<std::string> lines;
     while (std::getline(inputFile, line)) {
@@ -45,15 +44,15 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0;
 
         // 1. Október 15-én létrejött sorok
-        std::regex rx1("^10-15\\s");
+        std::regex rx1("^10-15\\s+");
         // 2. Október 15. 10:18:51
-        std::regex rx2("^10-15\\s10:18:51\\.\\d+\\s");
+        std::regex rx2("^10-15\\s+10:18:51\\.\\d+\\s+");
         // 3. Bármikor 51 másodperckor
-        std::regex rx3("^\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:51\\.\\d+\\s");
+        std::regex rx3("^\\S+\\s+\\d{2}:\\d{2}:51\\.\\d+\\s+");
         // 4. lowmemorykiller tag
         std::regex rx4("lowmemorykiller");
-        // 5. 10:18:51-kor, 221-es PID
-        std::regex rx5("^10-15\\s10:18:51\\.\\d+\\s+221\\s");
+        // 5. 10:18:51-kor, 221-es PID (A feladat NEM írja, hogy csak 10-15-én!)
+        std::regex rx5("^\\S+\\s+10:18:51\\.\\d+\\s+221\\s+");
 
         for (const auto& l : lines) {
             if (std::regex_search(l, rx1)) c1++;
@@ -65,14 +64,12 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         outputFile << c1 << "\n" << c2 << "\n" << c3 << "\n" << c4 << "\n" << c5 << "\n";
 
     } else if (task == 2) {
-        // Hiba (E) és Warning (W) sorokból a .java fájlok kinyerése
-        // Olyan sor, ahol a szint E vagy W
-        std::regex rxLevelEW("^\\S+\\s+\\S+\\s+\\d+\\s+\\d+\\s+[EW]\\s+");
-        // .java fájlnév kinyerése
+        // 2. feladat: Csak a hibasorok (E) .java fájljainak kinyerése
+        std::regex rxLevelE("^\\S+\\s+\\S+\\s+\\d+\\s+\\d+\\s+E\\s+");
         std::regex rxJava("([a-zA-Z0-9_]+\\.java)");
 
         for (const auto& l : lines) {
-            if (std::regex_search(l, rxLevelEW)) {
+            if (std::regex_search(l, rxLevelE)) {
                 auto begin = std::sregex_iterator(l.begin(), l.end(), rxJava);
                 auto end = std::sregex_iterator();
                 for (std::sregex_iterator i = begin; i != end; ++i) {
@@ -82,8 +79,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 3) {
-        // Különböző PID-ek kinyerése sorrendben
-        // A logcat 3. oszlopa (indexe) a PID
+        // 3. feladat: Egyedi PID-ek sorrendben
         std::regex rxPID("^\\S+\\s+\\S+\\s+(\\d+)");
         std::set<std::string> seen;
 
@@ -99,7 +95,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 4) {
-        // A legtöbb errort (E) tartalmazó process (PID)
+        // 4. feladat: A legtöbb E-t tartalmazó PID
         std::regex rxE("^\\S+\\s+\\S+\\s+(\\d+)\\s+\\d+\\s+E\\s+");
         std::map<std::string, int> errCount;
 
@@ -123,8 +119,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 5) {
-        // Fő szálon (PID == TID) történt hibák (E) száma
-        // Backreference (\\1) használatával ellenőrizzük, hogy a két ID megegyezik-e
+        // 5. feladat: Fő szálon (PID == TID) történt E-k száma
         std::regex rxMainThreadE("^\\S+\\s+\\S+\\s+(\\d+)\\s+\\1\\s+E\\s+");
         int count = 0;
 

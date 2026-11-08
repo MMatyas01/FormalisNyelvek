@@ -44,51 +44,50 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         int c1 = 0, c2 = 0, c3 = 0, c4 = 0, c5 = 0;
         int c6 = 0, c7 = 0, c8 = 0, c9 = 0, c10 = 0;
 
-        // Szigorú regex a logcat sorok szétválasztására (Dátum, Idő, PID, TID, Szint, Tag, Üzenet)
-        std::regex rxLine("^(\\S+)\\s+(\\S+)\\s+(\\d+)\\s+(\\d+)\\s+([IDVEFAW])\\s+([^:]+):(.*)$");
-        std::smatch match;
+        // 1. Október 15-ei sorok (dátum a sor elején)
+        std::regex rx1("^10-15\\s+");
+
+        // 2. Október 15. 10:18:51 (dátum és idő együtt)
+        std::regex rx2("^10-15\\s+10:18:51\\.");
+
+        // 3. Bármikor 51 másodperckor (bármilyen dátum, óra:perc:51)
+        std::regex rx3("^\\S+\\s+\\d{2}:\\d{2}:51\\.");
+
+        // 4. lowmemorykiller tag (szint után, kettősponttal)
+        std::regex rx4("\\s+[IDVEFAW]\\s+lowmemorykiller:");
+
+        // 5. 10:18:51-kor, 221-es process (PID a 3. oszlopban)
+        std::regex rx5("^\\S+\\s+10:18:51\\.\\d+\\s+221\\s+");
+
+        // 6. Összes E (Error) sor
+        std::regex rx6("\\s+E\\s+");
+
+        // 7. W (Warning) sor, PackageManager taggel
+        std::regex rx7("\\s+W\\s+PackageManager:");
+
+        // 8. D (Debug) sor, ExoPlayer taggel
+        std::regex rx8("\\s+D\\s+ExoPlayer:");
+
+        // 9. E vagy W sor, ami .java fájlt tartalmaz
+        std::regex rx9("\\s+[EW]\\s+.*\\.java:");
+
+        // 10. Thread szó az üzenetben (nem a tagben)
+        std::regex rx10("\\s+[IDVEFAW]\\s+[^:]+:.*Thread");
 
         for (const auto& l : lines) {
-            if (std::regex_search(l, match, rxLine)) {
-                std::string date = match[1].str();
-                std::string time = match[2].str();
-                std::string pid = match[3].str();
-                std::string level = match[5].str();
-                std::string tag = match[6].str();
-                std::string msg = match[7].str();
-
-                // 1. Október 15
-                if (date.find("10-15") != std::string::npos) c1++;
-
-                // 2. Október 15. 10:18:51
-                if (date.find("10-15") != std::string::npos && time.find("10:18:51") == 0) c2++;
-
-                // 3. 51. másodperc
-                if (time.find(":51.") != std::string::npos) c3++;
-
-                // 4. lowmemorykiller tag
-                if (tag.find("lowmemorykiller") != std::string::npos) c4++;
-
-                // 5. 10:18:51 és 221-es PID
-                if (time.find("10:18:51") == 0 && pid == "221") c5++;
-
-                // 6. Összes E sor
-                if (level == "E") c6++;
-
-                // 7. W sor PackageManager taggel
-                if (level == "W" && tag.find("PackageManager") != std::string::npos) c7++;
-
-                // 8. D sor ExoPlayer taggel
-                if (level == "D" && tag.find("ExoPlayer") != std::string::npos) c8++;
-
-                // 9. E vagy W sor, ami .java fájlt tartalmaz
-                if ((level == "E" || level == "W") && l.find(".java") != std::string::npos) c9++;
-
-                // 10. Thread szó az üzenetben
-                if (msg.find("Thread") != std::string::npos) c10++;
-            }
+            if (std::regex_search(l, rx1)) c1++;
+            if (std::regex_search(l, rx2)) c2++;
+            if (std::regex_search(l, rx3)) c3++;
+            if (std::regex_search(l, rx4)) c4++;
+            if (std::regex_search(l, rx5)) c5++;
+            if (std::regex_search(l, rx6)) c6++;
+            if (std::regex_search(l, rx7)) c7++;
+            if (std::regex_search(l, rx8)) c8++;
+            if (std::regex_search(l, rx9)) c9++;
+            if (std::regex_search(l, rx10)) c10++;
         }
-        // 10 szám kiírása egymás alá
+
+        // A várt 10 szám kiírása
         outputFile << c1 << "\n" << c2 << "\n" << c3 << "\n" << c4 << "\n" << c5 << "\n"
                    << c6 << "\n" << c7 << "\n" << c8 << "\n" << c9 << "\n" << c10 << "\n";
 

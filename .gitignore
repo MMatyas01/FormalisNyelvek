@@ -1,8 +1,17 @@
+# Python
 __pycache__
 *.py[c|o]
+evaluate_formal.py
 
+# IDE (CLion / IntelliJ)
+.idea/
+
+# CMake / C++ build fájlok
 CMakeCache.txt
-CMakeFiles
+CMakeFiles/
 *.cmake
 Makefile
 *.exe
+cmake-build-debug/
+cmake-build-release/
+build/

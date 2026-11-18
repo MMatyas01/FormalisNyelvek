@@ -43,7 +43,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
     if (task == 1) {
         int c[10] = {0};
 
-        // Segéd: teljes log-fejléc eleje: MM-DD HH:MM:SS.mmm PID TID LEVEL
         // 1. Október 15-ei sorok
         std::regex rx1(R"(^10-15\s+)");
 
@@ -72,7 +71,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         std::regex rx9(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[EW]\s+.*\.java:)");
 
         // 10. "Thread" szó a message részben (nem a tagben)
-        //     \b szóhatár, hogy a ThreadPool / Threading / mainThread ne számítson
         std::regex rx10(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[IDVEFAW]\s+[^:]+:.*\bThread\b)");
 
         std::regex* rxs[10] = {
@@ -91,6 +89,14 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         for (int i = 0; i < 10; ++i) {
             outputFile << c[i] << "\n";
         }
+
+        // === IDEIGLENES DEBUG A CI LOGHOZ ===
+        std::cerr << "\n[DEBUG] Szamitott ertekek: ";
+        for (int i = 0; i < 10; ++i) {
+            std::cerr << c[i] << " ";
+        }
+        std::cerr << "\n[DEBUG] Vart ertekek:      15554 2816 2825 10 1 3196 104 54 645 244\n\n";
+        // ====================================
 
     } else if (task == 2) {
         // Összes E sor stack trace pozíciója (*.java), előfordulási sorrendben

@@ -46,7 +46,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         // 1. Október 15-ei sorok
         std::regex rx1(R"(^10-15\s+)");
 
-        // 2. Október 15. 10:18:51 (bármely ms)
+        // 2. Október 15. 10:18:51
         std::regex rx2(R"(^10-15\s+10:18:51\.\d{3}\s+)");
 
         // 3. Bármikor :51 másodperc
@@ -58,20 +58,20 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         // 5. 10:18:51-kor, 221-es PID
         std::regex rx5(R"(^10-15\s+10:18:51\.\d{3}\s+221\s+)");
 
-        // 6. Összes E (Error) sor - csak a szintmezőben
+        // 6. Összes E sor
         std::regex rx6(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+E\s+)");
 
-        // 7. W (Warning) + PackageManager tag
+        // 7. W + PackageManager
         std::regex rx7(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+W\s+PackageManager:)");
 
-        // 8. D (Debug) + ExoPlayer tag
-        std::regex rx8(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+D\s+ExoPlayer:)");
+        // 8. D + ExoPlayer (JAVÍTVA: megengedi, hogy a tag hosszabb legyen, pl. ExoPlayerImpl:)
+        std::regex rx8(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+D\s+ExoPlayer[^:]*:)");
 
-        // 9. E vagy W sor, ami tartalmaz .java: előfordulást
+        // 9. E/W sor, .java: előfordulással
         std::regex rx9(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[EW]\s+.*\.java:)");
 
-        // 10. "Thread" szó a message részben (nem a tagben)
-        std::regex rx10(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[IDVEFAW]\s+[^:]+:.*\bThread\b)");
+        // 10. "Thread" szó a message részben (JAVÍTVA: kivettük a \b szóhatárokat)
+        std::regex rx10(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[IDVEFAW]\s+[^:]+:.*Thread)");
 
         std::regex* rxs[10] = {
             &rx1, &rx2, &rx3, &rx4, &rx5,
@@ -90,16 +90,14 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
             outputFile << c[i] << "\n";
         }
 
-        // === IDEIGLENES DEBUG A CI LOGHOZ ===
+        // === DEBUG (opcionális, törölhető, ha már átment) ===
         std::cerr << "\n[DEBUG] Szamitott ertekek: ";
         for (int i = 0; i < 10; ++i) {
             std::cerr << c[i] << " ";
         }
         std::cerr << "\n[DEBUG] Vart ertekek:      15554 2816 2825 10 1 3196 104 54 645 244\n\n";
-        // ====================================
 
     } else if (task == 2) {
-        // Összes E sor stack trace pozíciója (*.java), előfordulási sorrendben
         std::regex rxLevelE(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+E\s+)");
         std::regex rxJava(R"(([A-Za-z0-9_$]+\.java))");
 
@@ -114,7 +112,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 3) {
-        // Különböző PID-ek, előfordulási sorrendben
         std::regex rxPID(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+(\d+))");
         std::set<std::string> seen;
 
@@ -130,7 +127,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 4) {
-        // Legtöbb E-t küldő PID: PID=xx (nn errors)
         std::regex rxE(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+(\d+)\s+\d+\s+E\s+)");
         std::map<std::string, int> errCount;
 
@@ -154,7 +150,6 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         }
 
     } else if (task == 5) {
-        // Fő szálon történt E-k: PID == TID
         std::regex rxMainThreadE(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+(\d+)\s+\1\s+E\s+)");
         int count = 0;
 

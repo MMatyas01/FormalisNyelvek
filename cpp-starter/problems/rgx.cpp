@@ -64,13 +64,13 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
         // 7. W + PackageManager
         std::regex rx7(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+W\s+PackageManager:)");
 
-        // 8. D + ExoPlayer (JAVÍTVA: megengedi, hogy a tag hosszabb legyen, pl. ExoPlayerImpl:)
-        std::regex rx8(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+D\s+ExoPlayer[^:]*:)");
+        // 8. D + ExoPlayer (MEGENGEDŐBB: bárhol lehet a sorban az ExoPlayer szó)
+        std::regex rx8(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+D\s+.*ExoPlayer)");
 
         // 9. E/W sor, .java: előfordulással
         std::regex rx9(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[EW]\s+.*\.java:)");
 
-        // 10. "Thread" szó a message részben (JAVÍTVA: kivettük a \b szóhatárokat)
+        // 10. "Thread" szó a message részben
         std::regex rx10(R"(^\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d{3}\s+\d+\s+\d+\s+[IDVEFAW]\s+[^:]+:.*Thread)");
 
         std::regex* rxs[10] = {
@@ -90,7 +90,7 @@ int RgxProblem::run(const cxxopts::ParseResult &args) {
             outputFile << c[i] << "\n";
         }
 
-        // === DEBUG (opcionális, törölhető, ha már átment) ===
+        // === DEBUG ===
         std::cerr << "\n[DEBUG] Szamitott ertekek: ";
         for (int i = 0; i < 10; ++i) {
             std::cerr << c[i] << " ";
